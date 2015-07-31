@@ -4,6 +4,7 @@
  * Creates a single PHP file for the browser, so it can be uploaded as a single
  * file.
  */
+chdir(__DIR__);
 echo "Starting compilation process..\n";
 
 // Configuration
