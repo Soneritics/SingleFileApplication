@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>File browser</title>
+        <title>Single file application</title>
     </head>
     <body>
         <?php echo $content; ?>

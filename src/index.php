@@ -1,7 +1,8 @@
 <?php
 /**
  * Index file. When compiling, this function does not compile.
- * It functions as an index and autoloader for the src directory.
+ * It functions as an index and autoloader for the src directory so the code
+ * can be tested by opening this index file in the browser.
  *
  * @author Jordi Jolink
  * @date 31-7-2015
@@ -35,6 +36,6 @@ spl_autoload_register(
 );
 
 /**
- * Include the Browser object.
+ * Include the Script object file.
  */
 require 'Script.php';

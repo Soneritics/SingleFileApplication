@@ -1,6 +1,7 @@
 <?php
 /**
- * View class.
+ * View class. Takes care of rendering the correct template and passing the
+ * registered view variables to the template.
  *
  * @author Jordi Jolink
  * @date 31-7-2015
@@ -13,9 +14,9 @@ class View
     private $variables = array();
 
     /**
-     * Set a parameter for use in the view.
-     * @param $variable
-     * @param $value
+     * Assign a parameter for use in the view.
+     * @param string $variable Name of the parameter.
+     * @param mixed $value Value of the parameter.
      * @return $this
      */
     public function set($variable, $value)
@@ -25,8 +26,8 @@ class View
     }
 
     /**
-     * Render the view.
-     * @param string $view
+     * Render the view based on a template.
+     * @param string $view Template name.
      */
     public function render($view)
     {
