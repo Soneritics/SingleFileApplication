@@ -1,0 +1,10 @@
+{
+  "output": {
+    "path": "../bin/",
+    "filename": "index.php"
+  },
+  "input": {
+    "path": "../src/",
+    "templates": "../src/template/"
+  }
+}
