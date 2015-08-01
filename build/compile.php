@@ -70,7 +70,7 @@ foreach ($templates as $templateName => $templateContents) {
         $templateContents,
         array(
             '$' => '\\$',
-            '""' => '\\""',
+            '"' => '\\"',
             "\n" => '\\n',
             "\r" => '\\r',
             "\t" => '\\t'
@@ -79,11 +79,13 @@ foreach ($templates as $templateName => $templateContents) {
     $output .= "  private \${$templateName} = \"{$parsed}\";\n";
 }
 
-$output .= "  public function getTemplateFilename(\$template) {\n";
-$output .= "    \$templateValue = \$this->\$template;\n";
-$output .= "    #todo: register stream wrapper and write content http://php.net/manual/en/function.stream-wrapper-register.php\n";
-$output .= "  }\n";
+$output .= "  public function getTemplateFilename(\$template) {";
+$output .= "    \$templateValue = \$this->\$template;";
+$output .= "    if (!in_array(\"template\", stream_get_wrappers())) {stream_wrapper_register(\"template\", \"VariableStream\");}";
+$output .= "    \$fp = fopen(\"template://{$template}\", \"w\");fwrite(\$fp, \$templateValue);fclose(\$fp);return \"template://{$template}\";";
+$output .= "  }";
 $output .= "}\n";
+$output .= "class VariableStream {private \$position;private \$varname;function stream_open(\$path, \$mode, \$options, &\$opened_path){\$url = parse_url(\$path);\$this->varname = \$url[\"host\"];\$this->position = 0;return true;}function stream_read(\$count){\$ret = substr(\$GLOBALS[\$this->varname], \$this->position, \$count);\$this->position += strlen(\$ret);return \$ret;}function stream_write(\$data){\$left = substr(\$GLOBALS[\$this->varname], 0, \$this->position);\$right = substr(\$GLOBALS[\$this->varname], \$this->position + strlen(\$data));\$GLOBALS[\$this->varname] = \$left . \$data . \$right;\$this->position += strlen(\$data);return strlen(\$data);}function stream_tell(){return \$this->position;}function stream_eof(){return \$this->position >= strlen(\$GLOBALS[\$this->varname]);}function stream_seek(\$offset, \$whence){switch (\$whence) {case SEEK_SET:if (\$offset < strlen(\$GLOBALS[\$this->varname]) && \$offset >= 0) { \$this->position = \$offset; return true;} else { return false;}break;case SEEK_CUR:if (\$offset >= 0) { \$this->position += \$offset; return true;} else { return false;}break;case SEEK_END:if (strlen(\$GLOBALS[\$this->varname]) + \$offset >= 0) { \$this->position = strlen(\$GLOBALS[\$this->varname]) + \$offset; return true;} else { return false;}break;default:return false;}}function stream_metadata(\$path, \$option, \$var) {if(\$option == STREAM_META_TOUCH) {\$url = parse_url(\$path);\$varname = \$url[\"host\"];if(!isset(\$GLOBALS[\$varname])) {\$GLOBALS[\$varname] = '';}return true;}return false;}}\n";
 
 // Search for the source files
 function recursiveSearch($path, array $excludeList = array())
@@ -94,12 +96,15 @@ function recursiveSearch($path, array $excludeList = array())
     if (!empty($all)) {
         foreach ($all as $one) {
             if (!in_array($one, $excludeList)) {
+                echo "Processing {$one}... ";
                 if (is_dir($one)) {
-                    $result += recursiveSearch($one . '/', $excludeList);
+                    echo "Directory\n";
+                    $result = array_merge($result, recursiveSearch($one . '/', $excludeList));
                 } elseif (strtolower(substr($one, -4)) === '.php') {
+                    echo "PHP file\n";
                     $result[] = $one;
                 } else {
-                    echo "{$one} is not a valid PHP file!\n";
+                    echo "Not a valid PHP file\n";
                     exit(1);
                 }
             }
@@ -119,6 +124,9 @@ $files = recursiveSearch(
         '..'
     )
 );
+
+// Reverse sort the file list, so the executing script moves to the end
+rsort($files);
 
 // Add file contents
 foreach ($files as $file) {
